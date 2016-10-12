@@ -2,5 +2,9 @@ ProofSeer
 =========
 
 A Writing Support System
-This repository contains source files for a writing support system, which aims to help proofreading papers process.
-The system is based on GATE platform (gate.ac.uk)
+This repository contains source files for a writing support system, which is based on a mixture of NLP techniques.
+The code includes:
+1) Training language models with neural networks, and recurrent neural networks
+2) Text processing, vocabulary extraction, etc.
+
+The code is mostly written in python, and based on keras package
