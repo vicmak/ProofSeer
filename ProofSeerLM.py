@@ -288,8 +288,8 @@ def test_model_on_dir(model_filename, root, vocab):
                 arrX = np.array(X)
                 arrY = np.array(Y)
                 predictions = model.predict(arrX)
-                mrr = getMRR_after_sort(predictions, arrY, arrX, vocab)
-              #  mrr = getMRR(predictions, arrY)
+              #  mrr = getMRR_after_sort(predictions, arrY, arrX, vocab)
+                mrr = getMRR(predictions, arrY)
                 print(name, "MRR:", mrr)
 
 
@@ -324,9 +324,9 @@ def getMRR_after_sort(predictions, labels, contexts, vocab):
 
 
 def get_top_sorted_predictions_indexes(prediction, context, vocab):
-    sorted_predictions = [0] * 5
-    top_ten_indices = [0] * 5
-    for i in range(0, 5, 1):
+    sorted_predictions = [0] * 20
+    top_ten_indices = [0] * 20
+    for i in range(0, 20, 1):
         max_probability_index = np.argmax(prediction)
         top_ten_indices[i] = max_probability_index
         prediction[max_probability_index] = -1
@@ -420,9 +420,9 @@ def main():
     one_hot_train_data = "/Users/macbook/Desktop/corpora/aux_files/one_hot_csv.txt"
 
     vocab = read_vocab_to_list(common_words_filename)
-   # continue_train_model_from_dir("/Users/macbook/Desktop/corpora/corpus30k",
-   #                               vocab,
-   #                               "/Users/macbook/Desktop/corpora/aux_files/model.h5")
+  #  continue_train_model_from_dir("/Users/macbook/Desktop/corpora/corpus30k",
+  #                                vocab,
+  #                                "/Users/macbook/Desktop/corpora/aux_files/model.h5")
     #train_model_from_dir("/Users/macbook/Desktop/corpora/corpus30k", vocab)
     test_model_on_dir("/Users/macbook/Desktop/corpora/aux_files/model.h5", "/Users/macbook/Desktop/corpora/triple_test", vocab)
 
