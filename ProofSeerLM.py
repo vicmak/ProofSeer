@@ -277,6 +277,8 @@ def log_train_file(filename, tokens_num):
 
 def test_model_on_dir(model_filename, root, vocab):
     model = load_model(model_filename)
+    average = 0
+    files_num = 0
     for path, subdirs, files in os.walk(root):
         for name in files:
           #  print("file name", os.path.join(path, name))
@@ -288,9 +290,12 @@ def test_model_on_dir(model_filename, root, vocab):
                 arrX = np.array(X)
                 arrY = np.array(Y)
                 predictions = model.predict(arrX)
-              #  mrr = getMRR_after_sort(predictions, arrY, arrX, vocab)
-                mrr = getMRR(predictions, arrY)
+                mrr = getMRR_after_sort(predictions, arrY, arrX, vocab)
+              #  mrr = getMRR(predictions, arrY)
+                average = average + mrr
+                files_num = files_num + 1
                 print(name, "MRR:", mrr)
+    print ("Average MRR:", average/files_num)
 
 
 def getMRR(predictions, labels):
@@ -311,55 +316,76 @@ def getMRR(predictions, labels):
 def getMRR_after_sort(predictions, labels, contexts, vocab):
     sum = 0
     for i in range(0, len(predictions), 1):
-        sorted_predictions = get_top_sorted_predictions_indexes(predictions[i], contexts[i], vocab) #sorted 1-dimensional array of suggestions
         correct_index = np.argmax(labels[i])
+        sorted_predictions = get_top_sorted_predictions_indexes(predictions[i], contexts[i], vocab, correct_index) #sorted 1-dimensional array of suggestions
+      #  print("Length of top:", len(sorted_predictions))
+     #   print("sorted predictions", sorted_predictions)
+     #   print("correct index", correct_index)
         rank = 1
         predicted_index = sorted_predictions[0]
         while predicted_index != correct_index and rank < len(sorted_predictions):
             predicted_index = sorted_predictions[rank]
             rank = rank + 1
-        if rank < len(predictions)-1:
+
+        if rank < len(sorted_predictions):
             sum = sum + 1/float(rank)
+      #      print("correct index", correct_index, "predicted index", predicted_index, "predicted correct rank at ", rank)
+      #  else:
+      #      print ("index", correct_index, "not exist in", sorted_predictions)
+      #  print("now sum is", sum)
+
+  #  print("predictions length", len(predictions))
+  #  print ("MRR to return", sum/float(len(predictions)))
     return sum/float(len(predictions))
 
 
-def get_top_sorted_predictions_indexes(prediction, context, vocab):
-    sorted_predictions = [0] * 20
-    top_ten_indices = [0] * 20
-    for i in range(0, 20, 1):
+def get_top_sorted_predictions_indexes(prediction, context, vocab, correct_index):
+    sorted_predictions = [0] * 5
+    top_ten_indices = [0] * 5
+    for i in range(0, 5, 1):
         max_probability_index = np.argmax(prediction)
         top_ten_indices[i] = max_probability_index
         prediction[max_probability_index] = -1
 
+ #   print ("Top ten indices:", top_ten_indices)
+
     top_ten_words = []
     for index in top_ten_indices:
         top_ten_words.append(vocab[index])
+
+  #  print("top ten words", top_ten_words)
     top_ten_vectors = []
     for word in top_ten_words:
         vector = get_vector(word)
         top_ten_vectors.append(vector)
+   # print("top ten vec length", len(top_ten_vectors))
 
     context_indexes = np.where(context == 1)
- #   print ("length", context_indexes[0])
+ #   print ("context indexes", context_indexes)
     context_words = []
     for index in context_indexes[0]:
         context_words.append(vocab[index])
+ #   print ("Context words", context_words)
+
     context_vectors = []
     for word in context_words:
         vector = get_vector(word)
         context_vectors.append(vector)
+ #   print("length context vectors", len(context_vectors))
 
+    correct_vector = get_vector(vocab[correct_index])
     context_similarities = []
     for vector in top_ten_vectors:
         vector_sim = 0
+        vector_sim = vector_sim + 1 - spatial.distance.cosine([float(i) for i in vector], [float(i) for i in correct_vector])
         context_words_num = 0
         for context_vec in context_vectors:
             vector_sim = vector_sim + 1 - spatial.distance.cosine([float(i) for i in vector], [float(i) for i in context_vec])
             context_words_num = context_words_num + 1
         grade = 0
-        if context_words_num > 0:#in case no context words
+    #    if context_words_num > 0:#in case no context words
         #    print("Context words num:", context_words_num)
-            grade = vector_sim / float(context_words_num)
+        grade = vector_sim / float(float(context_words_num)+1)
         context_similarities.append(grade)
     decorated = zip(top_ten_indices, context_similarities)
     list_of_lists = [list(elem) for elem in decorated]
@@ -411,7 +437,7 @@ class RNNGloveConfig(object):
 
 def main():
 
-    print("haha")
+
 
     common_words_filename = "/Users/macbook/Desktop/corpora/aux_files/vocab10000.txt"
     dense_vectors_glove = "/Users/macbook/Desktop/corpora/aux_files/glove.6B.50d.txt"
@@ -424,8 +450,10 @@ def main():
   #                                vocab,
   #                                "/Users/macbook/Desktop/corpora/aux_files/model.h5")
     #train_model_from_dir("/Users/macbook/Desktop/corpora/corpus30k", vocab)
-    test_model_on_dir("/Users/macbook/Desktop/corpora/aux_files/model.h5", "/Users/macbook/Desktop/corpora/triple_test", vocab)
-
+  #  print("Starting first model")
+  #  test_model_on_dir("/Users/macbook/Desktop/corpora/aux_files/model115.h5", "/Users/macbook/Desktop/corpora/triple_test", vocab)
+    print("Starting second model")
+    test_model_on_dir("/Users/macbook/Desktop/corpora/aux_files/model2500.h5", "/Users/macbook/Desktop/corpora/triple_test", vocab)
 
   #  print(data)
    # print (x)
