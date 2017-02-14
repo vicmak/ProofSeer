@@ -1,6 +1,8 @@
 ProofSeer
 =========
 
+The implementation of Language Models with Pre-Trained (GloVe) Word Embeddings is found in LM_RNN_GloVe.py.
+
 A Writing Support System
 This repository contains source files for a writing support system, which is based on a mixture of NLP techniques.
 The code includes:
