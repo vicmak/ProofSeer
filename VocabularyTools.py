@@ -137,6 +137,27 @@ def write_vocab_2_file(filename, vocab):
             myfile.write(pair[0] + " " + str(pair[1]) + "\n")
 
 
+def flush_txts_to_file(sourceTxtFolderName, targetTextFileName="bla", vocab = None):
+    for root, dirs, files in os.walk(sourceTxtFolderName):
+        path = root.split('/')
+        print (len(path) - 1) *'---' , os.path.basename(root)
+        for file in files:
+           # print len(path)*'---', file
+            if (file.endswith("txt")):
+                current_filename = root + "/" + file
+                with open(current_filename, "r") as myfile:
+                    current_text = myfile.read().lower()
+                current_text = clean_text(current_text)
+                print ("adding file:", file)
+                sentences = current_text.split(".")
+                with open(targetTextFileName, "a") as myfile:
+                    for i in range(0, len(sentences)):
+                        sentence = sentences[i].replace("\n", " ").replace("- ", "")
+                       #print sentence
+                        if check_vocab_sentence(sentence, vocab):
+                            if len(sentence.strip().split(" "))>2:
+                                myfile.write("\n" + sentence)
+                                
 def main():
 
     #stop_words = read_vocab_to_list("/Users/macbook/Desktop/corpora/aux_files/mscc_stop_words.txt")
