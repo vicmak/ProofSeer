@@ -136,7 +136,14 @@ def write_vocab_2_file(filename, vocab):
         for pair in vocab:
             myfile.write(pair[0] + " " + str(pair[1]) + "\n")
 
-
+def check_vocab_sentence(sentence, vocab):
+    tokens = sentence.split(" ")
+    #print tokens
+    for token in tokens:
+        if token not in vocab:
+            return False
+    return True
+            
 def flush_txts_to_file(sourceTxtFolderName, targetTextFileName="bla", vocab = None):
     for root, dirs, files in os.walk(sourceTxtFolderName):
         path = root.split('/')
