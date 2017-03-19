@@ -1,6 +1,11 @@
 import os
 import operator
 import io
+import gensim
+
+import os
+import operator
+import io
 
 def my_strip(token):
     token = token.strip(",")
@@ -12,7 +17,7 @@ def my_strip(token):
 
 def clean_text(token):
     token = token.replace(",", "")
-    token = token.replace(".", "")
+    #token = token.replace(".", "")
     token = token.replace("?", "")
     token = token.replace(":", "")
     token = token.replace(";", "")
@@ -55,10 +60,39 @@ def get_clean_text_from_file2(filename):
                 file_content = file_content + line.lower() + " "
     return file_content
 
+def get_file_properties(filename):
+
+    counts = dict()
+    file_content = ""
+    count = 0
+    with open(filename) as f:
+        for line in f:
+            line_length = len(line.lower().split())
+            if counts.has_key(line_length):
+                counts[line_length] = counts[line_length] + 1
+            else:
+                counts[line_length] = 1
+
+    for i in range(41, 257):
+        if counts.has_key(i):
+            count = count + counts[i]
+            print i
+    print "count", counts
+    print "count", count
 
 def read_vocab_to_list(filename):
     return [word for line in open(filename, 'r') for word in line.split()]
 
+
+def read_vocab(filename):
+    vocab = []
+    with open(filename, "r") as myfile:
+        text = myfile.read()
+        rows = text.split("\n")
+        print rows
+        for row in rows:
+            vocab.append(row.split(" ")[0])
+    return vocab
 
 def clean_mscc(source_dir, target_dir):
     count = 0
@@ -114,7 +148,7 @@ def extract_vocabulary(dir_name, targetTextFileName="bla"):
         path = root.split('/')
         print (len(path) - 1) *'---' , os.path.basename(root)
         for file in files:
-            if (file.endswith("TXT")):
+            if (file.endswith("txt")):
                 count = count + 1
                 print("count: ", count)
                 with open(dir_name + "/" + file) as f:
@@ -131,19 +165,6 @@ def extract_vocabulary(dir_name, targetTextFileName="bla"):
     return sorted_vocabulary
 
 
-def write_vocab_2_file(filename, vocab):
-    with open(filename, "w") as myfile:
-        for pair in vocab:
-            myfile.write(pair[0] + " " + str(pair[1]) + "\n")
-
-def check_vocab_sentence(sentence, vocab):
-    tokens = sentence.split(" ")
-    #print tokens
-    for token in tokens:
-        if token not in vocab:
-            return False
-    return True
-            
 def flush_txts_to_file(sourceTxtFolderName, targetTextFileName="bla", vocab = None):
     for root, dirs, files in os.walk(sourceTxtFolderName):
         path = root.split('/')
@@ -164,21 +185,53 @@ def flush_txts_to_file(sourceTxtFolderName, targetTextFileName="bla", vocab = No
                         if check_vocab_sentence(sentence, vocab):
                             if len(sentence.strip().split(" "))>2:
                                 myfile.write("\n" + sentence)
-                                
+
+
+def check_vocab_sentence(sentence, vocab):
+    tokens = sentence.split(" ")
+    #print tokens
+    for token in tokens:
+        if token not in vocab:
+            return False
+    return True
+
+
+def write_vocab_2_file(filename, vocab):
+    vocab_size = 30000
+    count = 0
+    with open(filename, "w") as myfile:
+        for pair in vocab:
+            if pair[0].isalpha() and count < vocab_size:
+                myfile.write(pair[0] + " " + str(pair[1]) + "\n")
+                count += 1
+
+class MySentences(object):
+    def __init__(self, dirname):
+        self.dirname = dirname
+
+    def __iter__(self):
+        for fname in os.listdir(self.dirname):
+            for line in open(os.path.join(self.dirname, fname)):
+                yield line.split()
+
+
 def main():
 
-    #stop_words = read_vocab_to_list("/Users/macbook/Desktop/corpora/aux_files/mscc_stop_words.txt")
-    #print(stop_words)
-    #clean_corpus("/Users/macbook/Desktop/corpora/mscc_text", "/Users/macbook/Desktop/corpora/mscc_clean", stop_words)
-    #clean_mscc("/Users/macbook/Desktop/corpora/mscc_train", "/Users/macbook/Desktop/corpora/mscc_text")
-    create_single_file("/Users/macbook/Desktop/corpora/mscc_clean", "/Users/macbook/Desktop/corpora/mscc_single_clean.txt")
+    #sentences = MySentences('C:\\corpora\\mscc_clean')  # a memory-friendly iterator
+    #model = gensim.models.Word2Vec(sentences, min_count=27, size=300, workers=4, negative=10, iter=50)
+    #model.save('C:\\corpora\\sgns_mscc')
+    #model.save_word2vec_format('C:\\corpora\\sgns_mscc_300d.txt','C:\\corpora\\vocab_mscc.txt')
+
+    #clean_corpus("C:\\corpora\\triple_test", "C:\\corpora\\triple_test_clean", stop_words)
     #print("vocab tools")
-  #  vocab = extract_vocabulary("/Users/macbook/Desktop/corpora/mscc_clean")
+    #vocab = extract_vocabulary("C:\\corpora\\corpus30k")
     #print(vocab)
     #print(len(vocab))
-   # common_words_filename = "/Users/macbook/Desktop/corpora/aux_files/mscc_vocab.txt"
-   # write_vocab_2_file(common_words_filename, vocab)
-
-
+    #common_words_filename = "C:\\corpora\\vocab.txt"
+    #write_vocab_2_file(common_words_filename, vocab)
+    #vocab = read_vocab(common_words_filename)
+    #print vocab
+    #flush_txts_to_file("C:\\corpora\\corpus30k", "C:\\corpora\\long30k.txt",vocab)
+    get_file_properties("C:\\corpora\\long30k.txt")
 if __name__ == "__main__":
     main()
